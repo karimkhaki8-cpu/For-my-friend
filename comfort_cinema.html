@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-stone-950 text-amber-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Quiet Frame | Everything Is Going To Be Okay</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for cinematic & handwritten aesthetic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cinzel:wght@400;600&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Cinzel', 'serif'],
+            handwriting: ['Caveat', 'cursive'],
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            warmGold: '#e0a96d',
+            sepiaDark: '#1c1917',
+            amberGlow: '#f59e0b',
+          },
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Film Grain Layer */
+    .film-grain {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.07;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+    }
+
+    /* Vignette Effect */
+    .vignette {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 40;
+      background: radial-gradient(circle, transparent 50%, rgba(10, 8, 6, 0.85) 100%);
+    }
+
+    /* Flip Card 3D Perspective */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0c0a09;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #44403c;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #78716c;
+    }
+
+    /* Darkroom Wash Animation */
+    @keyframes developImage {
+      0% { filter: contrast(150%) brightness(20%) sepia(100%) hue-rotate(-30deg) blur(5px); opacity: 0.3; }
+      50% { filter: contrast(120%) brightness(60%) sepia(50%) blur(2px); opacity: 0.7; }
+      100% { filter: contrast(100%) brightness(100%) sepia(15%) blur(0px); opacity: 1; }
+    }
+    .developing {
+      animation: developImage 4s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full font-sans antialiased selection:bg-amber-800 selection:text-amber-100 relative overflow-x-hidden">
+
+  <!-- Grain & Vignette overlays for warm aesthetic -->
+  <div class="film-grain"></div>
+  <div class="vignette"></div>
+
+  <!-- Main Container -->
+  <div id="app" class="min-h-screen flex flex-col justify-between relative z-10">
+
+    <!-- Header Navigation -->
+    <header class="p-6 md:p-8 flex justify-between items-center border-b border-amber-900/20 bg-stone-950/60 backdrop-blur-md sticky top-0 z-30">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-amber-950/40 border border-amber-800/30 rounded-full text-amber-400">
+          <i data-lucide="camera" class="w-5 h-5"></i>
+        </div>
+        <span class="font-serif tracking-widest text-xs uppercase text-amber-200/80">ISO 400 • Warm Memories</span>
+      </div>
+
+      <!-- Ambient Audio Sound Controls -->
+      <div class="flex items-center gap-2 md:gap-3 bg-stone-900/80 p-1.5 rounded-full border border-amber-900/30 shadow-inner">
+        <button id="audio-rain" onclick="toggleAudio('rain')" title="Soft Rain" class="p-2 rounded-full hover:bg-stone-800 text-stone-400 hover:text-amber-300 transition flex items-center gap-1.5 text-xs px-3">
+          <i data-lucide="cloud-rain" class="w-4 h-4"></i>
+          <span class="hidden md:inline font-mono">Rain</span>
+        </button>
+        <button id="audio-vinyl" onclick="toggleAudio('vinyl')" title="Warm Vinyl Crackle" class="p-2 rounded-full hover:bg-stone-800 text-stone-400 hover:text-amber-300 transition flex items-center gap-1.5 text-xs px-3">
+          <i data-lucide="disc" class="w-4 h-4"></i>
+          <span class="hidden md:inline font-mono">Vinyl</span>
+        </button>
+        <button id="audio-cafe" onclick="toggleAudio('cafe')" title="Cozy Cafe Ambiance" class="p-2 rounded-full hover:bg-stone-800 text-stone-400 hover:text-amber-300 transition flex items-center gap-1.5 text-xs px-3">
+          <i data-lucide="coffee" class="w-4 h-4"></i>
+          <span class="hidden md:inline font-mono">Cozy</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- SECTION 1: Viewfinder Shutter Overlay Intro -->
+    <section id="hero-viewfinder" class="relative min-h-[85vh] flex flex-col items-center justify-center p-6 text-center">
+      <!-- Camera Viewfinder Frame overlay -->
+      <div class="absolute inset-4 md:inset-12 border border-amber-500/20 rounded-2xl pointer-events-none flex flex-col justify-between p-4 md:p-6">
+        <div class="flex justify-between text-[10px] font-mono text-amber-500/40 uppercase tracking-widest">
+          <span>[ REC ] 00:01:24</span>
+          <span>FPS 24 • 35mm</span>
+        </div>
+        <!-- Crosshairs -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 pointer-events-none opacity-30">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-amber-400"></div>
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-amber-400"></div>
+          <div class="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 w-2 bg-amber-400"></div>
+          <div class="absolute right-0 top-1/2 -translate-y-1/2 h-0.5 w-2 bg-amber-400"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-mono text-amber-500/40 uppercase tracking-widest">
+          <span>f/1.8 • 1/125s</span>
+          <span>STILL IN FOCUS</span>
+        </div>
+      </div>
+
+      <!-- Main Headline Content -->
+      <div class="max-w-2xl mx-auto z-20 space-y-6">
+        <div class="inline-block px-4 py-1.5 bg-amber-950/60 border border-amber-800/40 rounded-full text-amber-300/90 text-sm font-sans tracking-wide mb-2 animate-pulse-slow">
+          ✨ A soft reminder for a special person
+        </div>
+        <h1 class="text-4xl md:text-6xl font-serif text-amber-100 font-semibold leading-tight tracking-wide">
+          Take a slow breath.<br/>Everything is going to be okay.
+        </h1>
+        <p class="text-stone-400 font-sans text-base md:text-lg max-w-xl mx-auto leading-relaxed font-light">
+          Life, like cinema, has shadow and highlight. Even when the current shot feels dark or messy, remember: you are holding the camera, and tomorrow is a fresh frame.
+        </p>
+        
+        <div class="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button onclick="scrollToSection('focus-section')" class="px-8 py-3.5 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-amber-950 font-semibold rounded-full shadow-lg shadow-amber-900/30 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center gap-2 group">
+            <span>Explore The Frames</span>
+            <i data-lucide="arrow-down" class="w-4 h-4 group-hover:translate-y-1 transition-transform"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECTION 2: Lens Focus Interactive Slider -->
+    <section id="focus-section" class="py-20 px-6 max-w-5xl mx-auto w-full">
+      <div class="text-center space-y-3 mb-12">
+        <span class="text-xs font-mono uppercase tracking-widest text-amber-400/70">Interactive Lens Control</span>
+        <h2 class="text-3xl md:text-4xl font-serif text-amber-100">Adjust the Focus</h2>
+        <p class="text-stone-400 text-sm max-w-md mx-auto">When things feel overwhelming or blurry, just take a second to pause and re-focus.</p>
+      </div>
+
+      <!-- Focus Box Container -->
+      <div class="relative bg-stone-900/90 border border-stone-800 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden backdrop-blur-xl">
+        <!-- Background Blurring Photo Canvas -->
+        <div class="relative h-72 md:h-96 w-full rounded-2xl overflow-hidden shadow-inner flex items-center justify-center">
+          <img id="focus-image" 
+               src="https://images.unsplash.com/photo-1518173946687-a4c8a383392e?q=80&w=1200&auto=format&fit=crop" 
+               alt="Warm Bokeh Sun Rays" 
+               class="absolute inset-0 w-full h-full object-cover transition-all duration-150 scale-105"
+               style="filter: blur(15px) opacity(0.6);" />
+          
+          <!-- Overlay Dynamic Text based on Focus -->
+          <div class="relative z-10 text-center px-6 py-4 bg-stone-950/70 rounded-2xl border border-amber-900/40 backdrop-blur-md max-w-lg transition-all">
+            <p id="focus-quote" class="text-xl md:text-2xl font-handwriting text-amber-200 transition-opacity duration-300">
+              "Slide the ring below to clear the view..."
+            </p>
+          </div>
+        </div>
+
+        <!-- Slider Range Control -->
+        <div class="mt-8 flex flex-col md:flex-row items-center gap-6 justify-between bg-stone-950/50 p-4 rounded-xl border border-stone-800">
+          <div class="flex items-center gap-3 text-stone-400 text-sm">
+            <i data-lucide="eye-off" class="w-5 h-5 text-amber-500/70"></i>
+            <span>Blurry</span>
+          </div>
+
+          <div class="flex-1 w-full relative">
+            <input id="focus-slider" type="range" min="0" max="100" value="15" 
+                   class="w-full h-2 bg-stone-800 rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 focus:outline-none"
+                   oninput="updateFocus(this.value)">
+          </div>
+
+          <div class="flex items-center gap-3 text-stone-400 text-sm">
+            <span>Sharp & Clear</span>
+            <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- SECTION 3: Film Strip & Flip Polaroid Cards -->
+    <section class="py-20 px-6 max-w-6xl mx-auto w-full">
+      <div class="text-center space-y-3 mb-14">
+        <span class="text-xs font-mono uppercase tracking-widest text-amber-400/70">35mm Memories & Warm Truths</span>
+        <h2 class="text-3xl md:text-4xl font-serif text-amber-100">Click to Turn the Frame</h2>
+        <p class="text-stone-400 text-sm max-w-md mx-auto">Click any photo card below to reveal a sweet note written just for you.</p>
+      </div>
+
+      <!-- Film Strip Container -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Card 1 -->
+        <div class="perspective-1000 h-96 group cursor-pointer" onclick="flipCard(this)">
+          <div class="card-inner relative w-full h-full transform-style-3d shadow-2xl rounded-2xl">
+            <!-- Front -->
+            <div class="absolute inset-0 backface-hidden bg-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-col justify-between">
+              <div class="bg-stone-950 p-3 rounded-xl h-64 overflow-hidden relative">
+                <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop" alt="Vintage camera film" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-4 right-4 bg-stone-950/80 text-amber-300 text-xs px-2.5 py-1 rounded-full font-mono border border-amber-900/30">Frame #01</div>
+              </div>
+              <div class="text-center pt-2">
+                <span class="font-handwriting text-2xl text-amber-200">The Power of Perspective</span>
+                <p class="text-[11px] font-mono text-stone-500 uppercase tracking-wider mt-1">Tap card to read note ↺</p>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 border border-amber-800/40 rounded-2xl p-6 flex flex-col justify-between text-center bg-gradient-to-b from-stone-900 to-amber-950/30">
+              <div class="my-auto space-y-4">
+                <i data-lucide="sun" class="w-8 h-8 text-amber-400 mx-auto opacity-80"></i>
+                <p class="font-handwriting text-2xl text-amber-100 leading-relaxed">
+                  "Shadows are only there because light is shining somewhere nearby. You aren't stuck; you're just between exposures."
+                </p>
+              </div>
+              <p class="text-xs text-stone-400 font-sans border-t border-stone-800 pt-3">You are stronger than this hard day.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="perspective-1000 h-96 group cursor-pointer" onclick="flipCard(this)">
+          <div class="card-inner relative w-full h-full transform-style-3d shadow-2xl rounded-2xl">
+            <!-- Front -->
+            <div class="absolute inset-0 backface-hidden bg-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-col justify-between">
+              <div class="bg-stone-950 p-3 rounded-xl h-64 overflow-hidden relative">
+                <img src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=600&auto=format&fit=crop" alt="Warm sunset light" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-4 right-4 bg-stone-950/80 text-amber-300 text-xs px-2.5 py-1 rounded-full font-mono border border-amber-900/30">Frame #02</div>
+              </div>
+              <div class="text-center pt-2">
+                <span class="font-handwriting text-2xl text-amber-200">It's Okay to Cry</span>
+                <p class="text-[11px] font-mono text-stone-500 uppercase tracking-wider mt-1">Tap card to read note ↺</p>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 border border-amber-800/40 rounded-2xl p-6 flex flex-col justify-between text-center bg-gradient-to-b from-stone-900 to-amber-950/30">
+              <div class="my-auto space-y-4">
+                <i data-lucide="droplet" class="w-8 h-8 text-amber-400 mx-auto opacity-80"></i>
+                <p class="font-handwriting text-2xl text-amber-100 leading-relaxed">
+                  "Tears wash the lens so you can see things clearly again. Let yourself feel, then let yourself heal."
+                </p>
+              </div>
+              <p class="text-xs text-stone-400 font-sans border-t border-stone-800 pt-3">Take all the time you need.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="perspective-1000 h-96 group cursor-pointer" onclick="flipCard(this)">
+          <div class="card-inner relative w-full h-full transform-style-3d shadow-2xl rounded-2xl">
+            <!-- Front -->
+            <div class="absolute inset-0 backface-hidden bg-stone-900 border border-stone-800 rounded-2xl p-4 flex flex-col justify-between">
+              <div class="bg-stone-950 p-3 rounded-xl h-64 overflow-hidden relative">
+                <img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=600&auto=format&fit=crop" alt="Coffee and cozy notes" class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-4 right-4 bg-stone-950/80 text-amber-300 text-xs px-2.5 py-1 rounded-full font-mono border border-amber-900/30">Frame #03</div>
+              </div>
+              <div class="text-center pt-2">
+                <span class="font-handwriting text-2xl text-amber-200">The Next Scene</span>
+                <p class="text-[11px] font-mono text-stone-500 uppercase tracking-wider mt-1">Tap card to read note ↺</p>
+              </div>
+            </div>
+            <!-- Back -->
+            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-stone-900 border border-amber-800/40 rounded-2xl p-6 flex flex-col justify-between text-center bg-gradient-to-b from-stone-900 to-amber-950/30">
+              <div class="my-auto space-y-4">
+                <i data-lucide="film" class="w-8 h-8 text-amber-400 mx-auto opacity-80"></i>
+                <p class="font-handwriting text-2xl text-amber-100 leading-relaxed">
+                  "The best scenes in movies come right after the characters think all hope is lost. Your plot twist is coming."
+                </p>
+              </div>
+              <p class="text-xs text-stone-400 font-sans border-t border-stone-800 pt-3">I am always here in your corner.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- SECTION 4: Interactive Virtual Darkroom "Develop A Memory" -->
+    <section class="py-20 px-6 bg-stone-900/40 border-y border-amber-900/20">
+      <div class="max-w-4xl mx-auto text-center space-y-8">
+
+        <div class="space-y-3">
+          <span class="text-xs font-mono uppercase tracking-widest text-amber-400/70">Red Light Darkroom Experience</span>
+          <h2 class="text-3xl md:text-4xl font-serif text-amber-100">Develop a Virtual Photo Card</h2>
+          <p class="text-stone-400 text-sm max-w-lg mx-auto">Dip a blank film paper into the darkroom wash solution and watch a cheerful moment emerge.</p>
+        </div>
+
+        <!-- Darkroom Tray Base -->
+        <div class="bg-stone-950 border border-amber-950 p-8 rounded-3xl shadow-2xl relative overflow-hidden flex flex-col items-center">
+          
+          <!-- Safelight Ambient Glow -->
+          <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-600 via-amber-600 to-red-600 shadow-[0_0_35px_rgba(239,68,68,0.6)]"></div>
+
+          <!-- Photo Tray Container -->
+          <div id="darkroom-tray" class="w-full max-w-md h-80 bg-stone-900/90 border-2 border-stone-800 rounded-2xl flex items-center justify-center relative p-6 shadow-inner transition-colors">
+            
+            <div id="darkroom-placeholder" class="text-center space-y-3">
+              <div class="w-16 h-16 rounded-full bg-amber-950/40 border border-amber-800/30 flex items-center justify-center mx-auto text-amber-400/80">
+                <i data-lucide="sparkle" class="w-8 h-8"></i>
+              </div>
+              <p class="text-stone-400 text-sm font-sans">Click the button below to submerge a photo print into the solution.</p>
+            </div>
+
+            <!-- The Photo Card that will develop -->
+            <div id="developed-card" class="hidden w-full h-full bg-stone-100 text-stone-900 rounded-xl p-4 shadow-xl flex flex-col justify-between transition-all">
+              <div class="h-48 rounded-lg overflow-hidden relative">
+                <img id="developed-img" src="" alt="Developed memory" class="w-full h-full object-cover">
+              </div>
+              <div class="pt-3 text-center">
+                <p id="developed-text" class="font-handwriting text-2xl text-stone-800"></p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Action Button -->
+          <div class="mt-8 flex flex-col sm:flex-row items-center gap-4">
+            <button onclick="developPhoto()" class="px-7 py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-semibold rounded-full shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
+              <i data-lucide="flame" class="w-4 h-4"></i>
+              <span>Develop New Frame</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- SECTION 5: Comfort Wish Box Message -->
+    <section class="py-20 px-6 max-w-3xl mx-auto text-center space-y-8">
+      <div class="p-8 md:p-12 bg-gradient-to-b from-stone-900 to-stone-950 rounded-3xl border border-amber-900/30 shadow-2xl relative">
+        <i data-lucide="heart" class="w-10 h-10 text-amber-500/80 mx-auto mb-4 animate-bounce"></i>
+        <h3 class="text-2xl md:text-3xl font-serif text-amber-100">You are never alone in this frame.</h3>
+        <p class="text-stone-300 font-sans leading-relaxed text-sm md:text-base max-w-xl mx-auto font-light">
+          Whenever things get heavy, remember you have people who care about you deeply and love your creative soul. Put on some quiet music, grab a warm cup of coffee or tea, and let today rest.
+        </p>
+        <div class="pt-6">
+          <span class="font-handwriting text-3xl text-amber-300">"Everything turns out fine in the final cut."</span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="p-8 border-t border-amber-900/20 text-center text-stone-500 text-xs font-mono">
+      <p>Made with warm light, cozy ambiance, & deep care for a wonderful friend.</p>
+    </footer>
+
+  </div>
+
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // -------------------------------------------------------------
+    // SECTION 2: FOCUS SLIDER LOGIC
+    // -------------------------------------------------------------
+    const quotes = [
+      { maxVal: 20, text: '"Slide the ring below to clear the view..."', blur: 18, opacity: 0.5 },
+      { maxVal: 40, text: '"Things look uncertain right now, but that is just blur, not the whole story."', blur: 12, opacity: 0.7 },
+      { maxVal: 70, text: '"Keep breathing. Light always finds a way through the lens."', blur: 5, opacity: 0.85 },
+      { maxVal: 100, text: '"Everything is going to be okay. You are going to shine bright again!"', blur: 0, opacity: 1.0 }
+    ];
+
+    function updateFocus(val) {
+      const img = document.getElementById('focus-image');
+      const quoteEl = document.getElementById('focus-quote');
+
+      // Find matching threshold quote
+      const current = quotes.find(q => val <= q.maxVal) || quotes[quotes.length - 1];
+
+      // Smoothly update filter and text
+      img.style.filter = `blur(${current.blur}px) opacity(${current.opacity})`;
+      
+      if (quoteEl.innerText !== current.text) {
+        quoteEl.style.opacity = 0;
+        setTimeout(() => {
+          quoteEl.innerText = current.text;
+          quoteEl.style.opacity = 1;
+        }, 150);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // SECTION 3: FLIP CARD LOGIC
+    // -------------------------------------------------------------
+    function flipCard(cardContainer) {
+      const cardInner = cardContainer.querySelector('.card-inner');
+      cardInner.classList.toggle('rotate-y-180');
+    }
+
+    // Smooth scroll helper
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // -------------------------------------------------------------
+    // SECTION 4: DARKROOM PHOTO DEVELOPER LOGIC
+    // -------------------------------------------------------------
+    const memoryPhotos = [
+      {
+        url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600&auto=format&fit=crop",
+        quote: "Capture moments, not worries."
+      },
+      {
+        url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=600&auto=format&fit=crop",
+        quote: "Nature never rushes, yet everything is accomplished."
+      },
+      {
+        url: "https://images.unsplash.com/photo-1493863641943-9b68992a8d07?q=80&w=600&auto=format&fit=crop",
+        quote: "Soft sunlight after rain is the sweetest sight."
+      },
+      {
+        url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600&auto=format&fit=crop",
+        quote: "Warm gentle waves bring quiet peace."
+      }
+    ];
+
+    let currentPhotoIdx = 0;
+
+    function developPhoto() {
+      const placeholder = document.getElementById('darkroom-placeholder');
+      const developedCard = document.getElementById('developed-card');
+      const developedImg = document.getElementById('developed-img');
+      const developedText = document.getElementById('developed-text');
+
+      // Hide placeholder
+      placeholder.classList.add('hidden');
+
+      // Cycle next photo data
+      const data = memoryPhotos[currentPhotoIdx % memoryPhotos.length];
+      currentPhotoIdx++;
+
+      // Reset developer animation
+      developedCard.classList.remove('hidden', 'developing');
+      developedImg.src = data.url;
+      developedText.innerText = `"${data.quote}"`;
+
+      // Trigger re-flow for animation reset
+      void developedCard.offsetWidth;
+
+      // Add developing animation
+      developedCard.classList.add('developing');
+    }
+
+
+    // -------------------------------------------------------------
+    // SECTION 5: WEBAUDIO AMBIENT SYNTHESIZER (No External Sound Files)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+    let activeAudioNodes = {
+      rain: null,
+      vinyl: null,
+      cafe: null
+    };
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function toggleAudio(type) {
+      initAudioContext();
+      const btn = document.getElementById(`audio-${type}`);
+
+      if (activeAudioNodes[type]) {
+        // Turn OFF
+        activeAudioNodes[type].stop();
+        activeAudioNodes[type] = null;
+        btn.classList.remove('bg-amber-900/60', 'text-amber-300', 'border', 'border-amber-700/50');
+        btn.classList.add('text-stone-400');
+      } else {
+        // Turn ON synthesized sound generator
+        let node = null;
+        if (type === 'rain') node = createRainSound();
+        if (type === 'vinyl') node = createVinylCrackle();
+        if (type === 'cafe') node = createCafeDrone();
+
+        activeAudioNodes[type] = node;
+        btn.classList.add('bg-amber-900/60', 'text-amber-300', 'border', 'border-amber-700/50');
+        btn.classList.remove('text-stone-400');
+      }
+    }
+
+    // Synthesize gentle pink noise for rain
+    function createRainSound() {
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        let white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        output[i] *= 0.02; // soft volume
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // Lowpass filter for smooth rain sound
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      whiteNoise.start();
+      return whiteNoise;
+    }
+
+    // Synthesize vinyl pops & crackles
+    function createVinylCrackle() {
+      const bufferSize = audioCtx.sampleRate * 2;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i++) {
+        // Occasional sharp pops
+        if (Math.random() < 0.0008) {
+          data[i] = (Math.random() * 2 - 1) * 0.3;
+        } else {
+          data[i] = (Math.random() * 2 - 1) * 0.005;
+        }
+      }
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2000, audioCtx.currentTime);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      noise.start();
+      return noise;
+    }
+
+    // Synthesize warm warm cafe synth pad
+    function createCafeDrone() {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+
+      osc1.frequency.setValueAtTime(110, audioCtx.currentTime); // A2 chord
+      osc2.frequency.setValueAtTime(164.81, audioCtx.currentTime); // E3
+
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+
+      return {
+        stop: () => {
+          osc1.stop();
+          osc2.stop();
+        }
+      };
+    }
+  </script>
+</body>
+</html>
